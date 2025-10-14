@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, FileText, Calendar } from 'lucide-react';
+import { X, Trash2, FileText, Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import backend from '~backend/client';
 import type { Note } from '~backend/notes/list';
 
@@ -13,6 +14,7 @@ export function NotesLibrary({ onLoadNote, onClose }: NotesLibraryProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadNotes = async () => {
     try {
@@ -57,6 +59,14 @@ export function NotesLibrary({ onLoadNote, onClose }: NotesLibraryProps) {
     });
   };
 
+  const filteredNotes = notes.filter((note) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="h-full flex flex-col font-serif">
       <div className="p-4 border-b border-stone-200 dark:border-neutral-700 flex items-center justify-between">
@@ -71,20 +81,42 @@ export function NotesLibrary({ onLoadNote, onClose }: NotesLibraryProps) {
         </Button>
       </div>
 
+      <div className="p-4 border-b border-stone-200 dark:border-neutral-700">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-neutral-500" />
+          <Input
+            type="text"
+            placeholder="Search notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-white dark:bg-neutral-800 border-stone-200 dark:border-neutral-700 text-stone-800 dark:text-neutral-200 placeholder:text-stone-400 dark:placeholder:text-neutral-500"
+          />
+        </div>
+      </div>
+
       <div className="flex-1 overflow-auto">
         {loading ? (
           <div className="p-4 text-center text-stone-500 dark:text-neutral-400 transition-colors duration-200">
             Loading notes...
           </div>
-        ) : notes.length === 0 ? (
+        ) : filteredNotes.length === 0 ? (
           <div className="p-4 text-center text-stone-500 dark:text-neutral-400 transition-colors duration-200">
             <FileText className="w-12 h-12 mx-auto mb-2 text-stone-300 dark:text-neutral-600" />
-            <p>No notes saved yet.</p>
-            <p className="text-sm">Create and save your first note!</p>
+            {searchQuery ? (
+              <>
+                <p>No notes found matching "{searchQuery}"</p>
+                <p className="text-sm">Try a different search term</p>
+              </>
+            ) : (
+              <>
+                <p>No notes saved yet.</p>
+                <p className="text-sm">Create and save your first note!</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="p-2">
-            {notes.map((note) => (
+            {filteredNotes.map((note) => (
               <div
                 key={note.id}
                 className="group p-3 mb-2 border border-stone-200 dark:border-neutral-700 rounded-lg hover:bg-stone-50 dark:hover:bg-neutral-700 transition-colors duration-200 cursor-pointer"
