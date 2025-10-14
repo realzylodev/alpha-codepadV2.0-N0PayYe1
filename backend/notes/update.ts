@@ -1,4 +1,5 @@
 import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
 import { notesDB } from "./db";
 
 export interface UpdateNoteParams {
@@ -20,8 +21,9 @@ export interface Note {
 
 // Updates an existing note.
 export const update = api<UpdateNoteParams & UpdateNoteRequest, Note>(
-  { expose: true, method: "PUT", path: "/notes/:id" },
+  { expose: true, method: "PUT", path: "/notes/:id", auth: true },
   async (req) => {
+    const auth = getAuthData()!;
     const row = await notesDB.queryRow<{
       id: number;
       title: string;
@@ -31,7 +33,7 @@ export const update = api<UpdateNoteParams & UpdateNoteRequest, Note>(
     }>`
       UPDATE notes
       SET title = ${req.title}, content = ${req.content}, updated_at = NOW()
-      WHERE id = ${req.id}
+      WHERE id = ${req.id} AND user_id = ${auth.userID}
       RETURNING id, title, content, created_at, updated_at
     `;
 

@@ -1,4 +1,5 @@
 import { api } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
 import { notesDB } from "./db";
 
 export interface Note {
@@ -15,8 +16,9 @@ export interface ListNotesResponse {
 
 // Retrieves all notes, ordered by creation date (latest first).
 export const list = api<void, ListNotesResponse>(
-  { expose: true, method: "GET", path: "/notes" },
+  { expose: true, method: "GET", path: "/notes", auth: true },
   async () => {
+    const auth = getAuthData()!;
     const rows = await notesDB.queryAll<{
       id: number;
       title: string;
@@ -26,6 +28,7 @@ export const list = api<void, ListNotesResponse>(
     }>`
       SELECT id, title, content, created_at, updated_at
       FROM notes
+      WHERE user_id = ${auth.userID}
       ORDER BY created_at DESC
     `;
 

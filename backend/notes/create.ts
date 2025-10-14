@@ -1,4 +1,5 @@
 import { api } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
 import { notesDB } from "./db";
 
 export interface CreateNoteRequest {
@@ -16,8 +17,9 @@ export interface Note {
 
 // Creates a new note.
 export const create = api<CreateNoteRequest, Note>(
-  { expose: true, method: "POST", path: "/notes" },
+  { expose: true, method: "POST", path: "/notes", auth: true },
   async (req) => {
+    const auth = getAuthData()!;
     const row = await notesDB.queryRow<{
       id: number;
       title: string;
@@ -25,8 +27,8 @@ export const create = api<CreateNoteRequest, Note>(
       created_at: Date;
       updated_at: Date;
     }>`
-      INSERT INTO notes (title, content)
-      VALUES (${req.title}, ${req.content})
+      INSERT INTO notes (title, content, user_id)
+      VALUES (${req.title}, ${req.content}, ${auth.userID})
       RETURNING id, title, content, created_at, updated_at
     `;
 

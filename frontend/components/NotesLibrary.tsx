@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Trash2, FileText, Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import backend from '~backend/client';
+import { useBackend } from '../hooks/useBackend';
 import type { Note } from '~backend/notes/list';
 
 interface NotesLibraryProps {
@@ -11,6 +11,7 @@ interface NotesLibraryProps {
 }
 
 export function NotesLibrary({ onLoadNote, onClose }: NotesLibraryProps) {
+  const backend = useBackend();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
