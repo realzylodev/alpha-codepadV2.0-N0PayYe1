@@ -1,4 +1,4 @@
-import { Download, Eye, EyeOff, FileText, Plus, Save, Library, Moon, Sun } from 'lucide-react';
+import { Download, Eye, EyeOff, FileText, Plus, Save, Library, Moon, Sun, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
@@ -19,6 +19,7 @@ interface ToolbarProps {
   onNoteSaved: (note: Note) => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  autoSaveStatus?: 'idle' | 'saving' | 'saved';
 }
 
 export function Toolbar({
@@ -35,6 +36,7 @@ export function Toolbar({
   onNoteSaved,
   isDarkMode,
   onToggleDarkMode,
+  autoSaveStatus = 'idle',
 }: ToolbarProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -99,18 +101,36 @@ export function Toolbar({
           />
           <span className="text-stone-500 dark:text-neutral-400 text-sm transition-colors duration-200">.md</span>
           
-          {/* Save Status Indicator */}
-          <div className="flex items-center ml-2">
-            {isSaving && (
-              <div className="w-2 h-2 bg-neutral-400 rounded-full animate-pulse"></div>
+          {/* Auto-Save Status Indicator */}
+          <div className="flex items-center ml-3 gap-1.5">
+            {autoSaveStatus === 'saving' && (
+              <>
+                <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                <span className="text-xs text-blue-500 font-medium">Saving...</span>
+              </>
             )}
-            {saveStatus === 'success' && (
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            )}
-            {saveStatus === 'error' && (
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            {autoSaveStatus === 'saved' && (
+              <>
+                <Check className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-xs text-green-500 font-medium">Saved</span>
+              </>
             )}
           </div>
+          
+          {/* Manual Save Status Indicator */}
+          {(isSaving || saveStatus !== 'idle') && (
+            <div className="flex items-center ml-2">
+              {isSaving && (
+                <div className="w-2 h-2 bg-neutral-400 rounded-full animate-pulse"></div>
+              )}
+              {saveStatus === 'success' && (
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              )}
+              {saveStatus === 'error' && (
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

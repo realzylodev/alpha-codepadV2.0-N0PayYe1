@@ -8,15 +8,13 @@ interface PreviewProps {
 export function Preview({ content }: PreviewProps) {
   const htmlContent = useMemo(() => {
     try {
-      // Configure marked options for better rendering
       marked.setOptions({
         breaks: true,
         gfm: true,
-        headerIds: false,
-        mangle: false,
       });
       
-      return marked(content);
+      const parsed = marked.parse(content);
+      return typeof parsed === 'string' ? parsed : '';
     } catch (error) {
       console.error('Error parsing markdown:', error);
       return '<p>Error parsing markdown</p>';
@@ -27,7 +25,7 @@ export function Preview({ content }: PreviewProps) {
     <div className="bg-stone-50 dark:bg-neutral-900 h-full overflow-auto transition-colors duration-200 font-serif">
       <div 
         className="p-8 max-w-none markdown-content"
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
+        dangerouslySetInnerHTML={{ __html: htmlContent as string }}
       />
       <style>{`
         .markdown-content {
